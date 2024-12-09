@@ -22,13 +22,14 @@ def main():
     model.to(device)
 
     start_time = time.time()
-    sentiment, outputs = predict_sentiment(args.text, model, tokenizer, device)
+    sentiment, probabilities, confidence = predict_sentiment(args.text, model, tokenizer, device)
     end_time = time.time()
     
     inference_time = end_time - start_time
     print('预测情感:', sentiment)
     print('推理时间: {:.4f}秒'.format(inference_time))
-    print('详细输出:', outputs)
+    print('详细概率输出:', probabilities)
+    print('置信度:', confidence)
 
 if __name__ == '__main__':
     main()
