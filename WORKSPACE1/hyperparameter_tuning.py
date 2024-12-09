@@ -108,7 +108,7 @@ def run_hyperparameter_search(train_dataset, valid_dataset, n_trials=5):
             catch=(RuntimeError,)
         )
         
-        print("\n搜索完成!")
+        print("\n搜索完成!<(￣︶￣)↗[GO!]")
         print("Best parameters:", study.best_params)
         print("Best validation loss:", study.best_value)
         

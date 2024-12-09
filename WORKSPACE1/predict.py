@@ -1,3 +1,4 @@
+import torch
 def predict_sentiment(text, model, tokenizer, device):
     """预测单个文本的情感"""
     model.eval()
@@ -18,4 +19,4 @@ def predict_sentiment(text, model, tokenizer, device):
         predictions = torch.argmax(outputs, dim=1)
     
     sentiment_map = {0: "负面", 1: "中性", 2: "正面"}
-    return sentiment_map[predictions.item()] 
+    return sentiment_map[predictions.item()], outputs
