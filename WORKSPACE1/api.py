@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template_string
 import torch
 from transformers import BertTokenizer
 from model import MultiDimensionalSentimentModel
@@ -10,6 +10,73 @@ app = Flask(__name__)
 # 创建一个全局变量来存储模型和tokenizer
 global_model = None
 global_tokenizer = None
+
+# 添加HTML模板
+API_DOC = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>情感分析 API 文档</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px;
+        }
+        pre { 
+            background-color: #f5f5f5; 
+            padding: 15px; 
+            border-radius: 5px;
+        }
+        .endpoint { 
+            margin-top: 20px; 
+            padding: 10px;
+            border-left: 3px solid #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <h1>情感分析 API 文档</h1>
+    
+    <div class="endpoint">
+        <h2>预测接口</h2>
+        <p><strong>端点：</strong> /predict</p>
+        <p><strong>方法：</strong> POST</p>
+        <p><strong>描述：</strong> 对输入的中文文本进行情感分析</p>
+        
+        <h3>请求格式：</h3>
+        <pre>
+{
+    "text": "要分析的文本"
+}
+        </pre>
+        
+        <h3>响应格式：</h3>
+        <pre>
+{
+    "sentiment": "情感类别",
+    "probabilities": [类别1概率, 类别2概率, ...],
+    "confidence": 置信度
+}
+        </pre>
+        
+        <h3>示例：</h3>
+        <p>使用 curl 发送请求：</p>
+        <pre>
+curl -X POST -H "Content-Type: application/json" \
+     -d '{"text":"今天天气真好"}' \
+     http://localhost:5000/predict
+        </pre>
+    </div>
+</body>
+</html>
+"""
+
+@app.route('/')
+def home():
+    """API文档首页"""
+    return render_template_string(API_DOC)
 
 def init_model():
     """初始化模型和tokenizer的函数"""
