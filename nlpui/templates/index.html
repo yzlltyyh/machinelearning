@@ -24,6 +24,89 @@
             height: 300px;
             margin: 20px 0;
         }
+        .result-emotion {
+            text-align: center;
+            margin: 20px 0;
+            animation: bounceIn 0.6s ease-out;
+        }
+        
+        .large-emoji {
+            font-size: 4em;
+            line-height: 1;
+            display: inline-block;
+        }
+        
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            60% {
+                transform: scale(1.2);
+                opacity: 0.7;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .result-item .value {
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        :root {
+            --emotion-color: #607D8B;
+        }
+
+        .audio-player {
+            border: 2px solid var(--emotion-color);
+            transition: border-color 0.3s ease;
+        }
+
+        .audio-header {
+            background-color: var(--emotion-color);
+            transition: background-color 0.3s ease;
+        }
+
+        .emotion-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .emotion-emoji {
+            font-size: 1.2em;
+        }
+
+        .audio-player[data-emotion='positive'] {
+            --emotion-color: #4CAF50;
+        }
+
+        .audio-player[data-emotion='negative'] {
+            --emotion-color: #f44336;
+        }
+
+        .audio-player[data-emotion='neutral'] {
+            --emotion-color: #607D8B;
+        }
+
+        .play-button {
+            background-color: var(--emotion-color);
+            border: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .audio-progress-bar {
+            background-color: var(--emotion-color);
+            transition: background-color 0.3s ease;
+        }
+
+        .volume-level {
+            background-color: var(--emotion-color);
+            transition: background-color 0.3s ease;
+        }
     </style>
 </head>
 <body>
@@ -88,7 +171,10 @@
         <section class="audio-section" style="display: none;">
             <div class="audio-player">
                 <div class="audio-header">
-                    <i class="fas fa-headphones"></i>
+                    <span class="emotion-indicator">
+                        <i class="fas fa-headphones"></i>
+                        <span class="emotion-emoji"></span>
+                    </span>
                     <span class="audio-title">语音播放</span>
                 </div>
                 <div class="audio-controls">
@@ -247,13 +333,31 @@
             }
         }
 
-        // 生成语音的函数
+        // 修改生成语音的函数
         async function generateTTS() {
             const text = document.querySelector('#inputText').value;
             if (!text) return;
 
+            const sentimentElement = document.querySelector('.result-content .value');
+            let sentiment = 'neutral';
+            let emotionEmoji = '😐'; // 默认表情
+            let emotionColor = '#607D8B'; // 默认颜色
+
+            if (sentimentElement) {
+                const sentimentText = sentimentElement.textContent;
+                if (sentimentText.includes('积极') || sentimentText.includes('正面')) {
+                    sentiment = 'positive';
+                    emotionEmoji = '😊';
+                    emotionColor = '#4CAF50';
+                } else if (sentimentText.includes('消极') || sentimentText.includes('负面')) {
+                    sentiment = 'negative';
+                    emotionEmoji = '😔';
+                    emotionColor = '#f44336';
+                }
+            }
+
             try {
-                const response = await fetch(`/api/tts?text=${encodeURIComponent(text)}`);
+                const response = await fetch(`/api/tts?text=${encodeURIComponent(text)}&sentiment=${sentiment}`);
                 if (!response.ok) throw new Error('TTS generation failed');
 
                 const blob = await response.blob();
@@ -263,10 +367,21 @@
                 const audioSection = document.querySelector('.audio-section');
                 audioSection.style.display = 'block';
                 
-                // 更新音频源
+                // 更新音频源和样式
                 const audioPlayer = document.querySelector('#ttsAudio');
+                const audioPlayerElement = document.querySelector('.audio-player');
+                const emotionEmojiElement = document.querySelector('.emotion-emoji');
+                
                 if (audioPlayer) {
                     audioPlayer.src = audioUrl;
+                    
+                    // 更新情感样式
+                    audioPlayerElement.setAttribute('data-emotion', sentiment);
+                    emotionEmojiElement.textContent = emotionEmoji;
+                    
+                    // 更新颜色样式
+                    document.documentElement.style.setProperty('--emotion-color', emotionColor);
+                    
                     // 初始化音频播放器控件
                     initAudioPlayer();
                 }
@@ -352,6 +467,18 @@
         function updateResults(data) {
             const resultsContainer = document.getElementById('results');
             
+            // 根据情感选择emoji和颜色
+            let emotionEmoji = '😐';
+            let emotionColor = '#607D8B';
+            
+            if (data.sentiment.includes('积极') || data.sentiment.includes('正面')) {
+                emotionEmoji = '😊';
+                emotionColor = '#4CAF50';
+            } else if (data.sentiment.includes('消极') || data.sentiment.includes('负面')) {
+                emotionEmoji = '😔';
+                emotionColor = '#f44336';
+            }
+            
             // 创建结果HTML
             const resultHTML = `
                 <div class="result-card animate-fade-in">
@@ -359,9 +486,12 @@
                         <h3>分析结果</h3>
                     </div>
                     <div class="result-content">
+                        <div class="result-emotion">
+                            <span class="large-emoji">${emotionEmoji}</span>
+                        </div>
                         <div class="result-item">
                             <span class="label">情感倾向：</span>
-                            <span class="value">${data.sentiment}</span>
+                            <span class="value" style="color: ${emotionColor}">${data.sentiment}</span>
                         </div>
                         <div class="result-item">
                             <span class="label">置信度：</span>
@@ -439,6 +569,10 @@
                     console.error('Chart container not found');
                 }
             }, 100);
+
+            // 在分析完成后，如果用户希望自动生成语音，可以在这里调用generateTTS
+            // 这是一个可选功能，取决于产品需求
+            // generateTTS();
         }
     </script>
 </body>

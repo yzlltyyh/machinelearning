@@ -6,14 +6,14 @@ export class TTSGenerator {
         this.generateButton = document.getElementById('generateTTS');
     }
 
-    async generateSpeech(text) {
+    async generateSpeech(text, sentiment) {
         if (!text.trim()) {
             throw new Error('请输入要转换的文本');
         }
 
         try {
             this.showGenerating();
-            const audioUrl = await this.requestTTS(text);
+            const audioUrl = await this.requestTTS(text, sentiment);
             this.updateAudioPlayer(audioUrl);
             this.showAudioPlayer();
         } catch (error) {
@@ -23,8 +23,8 @@ export class TTSGenerator {
         }
     }
 
-    async requestTTS(text) {
-        const url = `/api/tts?text=${encodeURIComponent(text)}`;
+    async requestTTS(text, sentiment) {
+        const url = `/api/tts?text=${encodeURIComponent(text)}&sentiment=${encodeURIComponent(sentiment)}`;
         const response = await fetch(url);
         
         if (!response.ok) {
