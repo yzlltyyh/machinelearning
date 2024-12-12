@@ -352,10 +352,6 @@
         function updateResults(data) {
             const resultsContainer = document.getElementById('results');
             
-            // 添加调试日志
-            console.log('Received data:', data);
-            console.log('Probabilities:', data.probabilities);
-            
             // 创建结果HTML
             const resultHTML = `
                 <div class="result-card animate-fade-in">
@@ -387,12 +383,17 @@
                         myChart.dispose();  // 销毁旧的图表实例
                     }
                     myChart = echarts.init(chartContainer);
-                    
+            
                     // 处理嵌套数组的情况
                     let probArray = Array.isArray(data.probabilities[0]) ? 
                                   data.probabilities[0] : 
                                   data.probabilities;
-                    
+            
+                    // 根据情感倾向决定标签
+                    const isNegative = data.sentiment === '消极' || data.sentiment === '负面';
+                    const accurateLabel = isNegative ? '消极' : '积极';
+                    const inaccurateLabel = isNegative ? '积极' : '消极';
+            
                     const option = {
                         title: {
                             text: '情感概率分布',
@@ -411,9 +412,16 @@
                                 type: 'pie',
                                 radius: '50%',
                                 data: [
-                                    { value: (probArray[0] * 100).toFixed(1), name: '积极' },
-                                    { value: (probArray[1] * 100).toFixed(1), name: '中性' },
-                                    { value: (probArray[2] * 100).toFixed(1), name: '消极' }
+                                    { 
+                                        value: (probArray[0] * 100).toFixed(1), 
+                                        name: accurateLabel,
+                                        itemStyle: { color: isNegative ? '#f44336' : '#4CAF50' }
+                                    },
+                                    { 
+                                        value: (probArray[1] * 100).toFixed(1), 
+                                        name: inaccurateLabel,
+                                        itemStyle: { color: isNegative ? '#4CAF50' : '#f44336' }
+                                    }
                                 ],
                                 emphasis: {
                                     itemStyle: {
@@ -425,15 +433,12 @@
                             }
                         ]
                     };
-                    
-                    // 添加调试日志
-                    console.log('Chart options:', option);
-                    
+            
                     myChart.setOption(option);
                 } else {
                     console.error('Chart container not found');
                 }
-            }, 100);  // 增加延时确保DOM完全更新
+            }, 100);
         }
     </script>
 </body>

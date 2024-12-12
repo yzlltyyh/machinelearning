@@ -61,6 +61,13 @@ export class SentimentAnalyzer {
             return isNaN(value) ? 0 : value;
         });
 
+        // 检查是否只有两个概率值
+        if (data.probabilities.length !== 2) {
+            console.warn('概率数组长度异常:', data.probabilities.length);
+            // 如果数据异常，使用默认值
+            data.probabilities = [1, 0];
+        }
+
         const sum = data.probabilities.reduce((a, b) => a + b, 0);
         if (Math.abs(sum - 1) > 0.1) {
             console.warn('概率总和异常:', sum);
