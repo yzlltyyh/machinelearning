@@ -1,0 +1,96 @@
+/* 结果显示区域布局 */
+.results-container {
+    opacity: 0;
+    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* 情感分析结果卡片 */
+.sentiment-card {
+    background: white;
+    border-radius: 24px;
+    padding: var(--spacing-8);
+    box-shadow: var(--shadow-lg);
+    margin-bottom: var(--spacing-6);
+}
+
+/* 情感指标网格 */
+.sentiment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-6);
+    margin-bottom: var(--spacing-8);
+}
+
+/* 情感指标项 */
+.sentiment-item {
+    background: var(--primary-100);
+    padding: var(--spacing-6);
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform var(--transition-normal);
+}
+
+.sentiment-item:hover {
+    transform: translateY(-2px);
+}
+
+.sentiment-label {
+    font-weight: 600;
+    color: var(--neutral-700);
+}
+
+.sentiment-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-500);
+}
+
+/* 概率分布区域 */
+.probability-container {
+    background: white;
+    padding: var(--spacing-6);
+    border-radius: 16px;
+    box-shadow: var(--shadow-md);
+}
+
+.probability-header {
+    margin-bottom: var(--spacing-6);
+}
+
+.probability-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--neutral-800);
+}
+
+/* 图表区域 */
+.chart-container {
+    margin-top: var(--spacing-8);
+    padding: var(--spacing-6);
+    background: var(--neutral-50);
+    border-radius: 16px;
+}
+
+/* 动画效果 */
+.result-animate-in {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1 ) forwards;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .sentiment-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sentiment-item {
+        padding: var(--spacing-4);
+    }
+
+    .probability-container {
+        padding: var(--spacing-4);
+    }
+}

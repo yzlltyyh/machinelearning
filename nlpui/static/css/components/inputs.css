@@ -1,0 +1,106 @@
+/* 输入框基础样式 */
+.input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.input-field {
+    width: 100%;
+    padding: var(--spacing-4);
+    border: 2px solid var(--neutral-200);
+    border-radius: 16px;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--neutral-800);
+    transition: all var(--transition-normal);
+    background: white;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 4px var(--primary-100);
+}
+
+/* 文本区域 */
+.textarea {
+    min-height: 180px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+/* 标签 */
+.input-label {
+    display: block;
+    margin-bottom: var(--spacing-2);
+    font-weight: 500;
+    color: var(--neutral-700);
+}
+
+/* 图标输入框 */
+.input-icon {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--neutral-400);
+}
+
+.input-icon-left {
+    left: var(--spacing-4);
+}
+
+.input-icon-right {
+    right: var(--spacing-4);
+}
+
+.input-with-icon-left {
+    padding-left: calc(var(--spacing-4) * 2 + 20px);
+}
+
+.input-with-icon-right {
+    padding-right: calc(var(--spacing-4) * 2 + 20px);
+}
+
+/* 输入框状态 */
+.input-error {
+    border-color: var(--error-500);
+}
+
+.input-error:focus {
+    box-shadow: 0 0 0 4px var(--error-100);
+}
+
+.input-success {
+    border-color: var(--success-500);
+}
+
+.input-success:focus {
+    box-shadow: 0 0 0 4px var(--success-100);
+}
+
+/* 帮助文本 */
+.input-help {
+    margin-top: var(--spacing-2);
+    font-size: 0.875rem;
+    color: var(--neutral-500);
+}
+
+.input-error-message {
+    color: var(--error-500);
+}
+
+/* 字数统计 */
+.input-counter {
+    position: absolute;
+    right: var(--spacing-4);
+    bottom: var(--spacing-4);
+    font-size: 0.875rem;
+    color: var(--neutral-500);
+}
+
+/* 响应式调整 */
+@media (max-width: 640px) {
+    .input-field {
+        padding: var(--spacing-3);
+    }
+}

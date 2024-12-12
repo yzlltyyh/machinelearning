@@ -1,15 +1,17 @@
-/* 全局样式 */
+/* 现代化配色方案 */
 :root {
-    --primary-color: #6366f1;
-    --secondary-color: #8b5cf6;
-    --success-color: #22c55e;
-    --background-color: #eef2ff;
+    --primary-color: #7C3AED;
+    --secondary-color: #4F46E5;
+    --success-color: #10B981;
+    --background-color: #F5F7FF;
     --workspace-color: #ffffff;
-    --text-primary: #1e293b;
-    --text-secondary: #64748b;
-    --accent-light: #e0e7ff;
-    --accent-dark: #4f46e5;
-    --shadow-color: rgba(99, 102, 241, 0.1);
+    --text-primary: #1F2937;
+    --text-secondary: #4B5563;
+    --accent-light: #EEF2FF;
+    --accent-dark: #4338CA;
+    --shadow-color: rgba(124, 58, 237, 0.08);
+    --gradient-primary: linear-gradient(135deg, #7C3AED, #4F46E5);
+    --gradient-secondary: linear-gradient(135deg, #4F46E5, #3B82F6);
 }
 
 * {
@@ -26,49 +28,77 @@ body {
     min-height: 100vh;
 }
 
-/* 布局容器 */
+/* 改进的布局容器 */
 .main-container {
-    max-width: 1200px;
+    max-width: 1280px;
     margin: 0 auto;
     padding: 2rem;
+    display: grid;
+    gap: 2rem;
 }
 
-/* 头部样式 */
+/* 现代化头部样式 */
 .header-section {
-    margin-bottom: 4rem;
+    text-align: center;
     padding: 3rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.header-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(124, 58, 237, 0.05) 0%, transparent 70%);
+    animation: rotate 30s linear infinite;
 }
 
 .main-title {
-    font-size: 3.5rem;
-    font-weight: 700;
-    color: var(--primary-color);
+    font-size: 4rem;
+    font-weight: 800;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
     margin-bottom: 1rem;
-    letter-spacing: -0.5px;
+    position: relative;
+    animation: fadeInDown 0.8s ease-out;
 }
 
 .subtitle {
-    font-size: 1.25rem;
-    font-weight: 300;
+    font-size: 1.5rem;
+    font-weight: 400;
     color: var(--text-secondary);
+    opacity: 0;
+    animation: fadeIn 0.8s ease-out forwards 0.3s;
 }
 
-/* 内容区域 */
+/* 改进的内容区域 */
 .content-section {
-    max-width: 800px;
+    display: grid;
+    gap: 2rem;
+    max-width: 900px;
     margin: 0 auto;
 }
 
-/* 输入区域 */
+/* 优化的输入区域 */
 .input-section {
     background: var(--workspace-color);
     padding: 2.5rem;
-    border-radius: 20px;
-    margin-bottom: 2rem;
-    box-shadow: 0 4px 20px var(--shadow-color);
+    border-radius: 24px;
+    box-shadow: 0 8px 30px var(--shadow-color);
+    transform: translateY(0);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* 语音控制 */
+.input-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px var(--shadow-color);
+}
+
+/* 改进的语音控制区 */
 .voice-controls {
     margin-bottom: 2rem;
 }
@@ -77,198 +107,223 @@ body {
     display: flex;
     gap: 1rem;
     justify-content: center;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .btn {
-    font-weight: 500;
-    padding: 0.8rem 1.5rem;
-    border-radius: 12px;
-    transition: all 0.3s ease;
+    font-weight: 600;
+    padding: 1rem 2rem;
+    border-radius: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: none;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    cursor: pointer;
 }
 
 .btn-voice {
     background: white;
     color: var(--primary-color);
-    box-shadow: 0 2px 10px var(--shadow-color);
-    min-width: 160px;
+    box-shadow: 0 4px 20px rgba(124, 58, 237, 0.1);
+    min-width: 180px;
+    position: relative;
+    overflow: hidden;
 }
 
-.btn-voice:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px var(--shadow-color);
+.btn-voice::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, transparent, rgba(124, 58, 237, 0.1), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+}
+
+.btn-voice:hover::before {
+    transform: translateX(100%);
 }
 
 .btn-analyze {
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-dark));
+    background: var(--gradient-primary);
     color: white;
+    min-width: 160px;
+    position: relative;
+    overflow: hidden;
 }
 
 .btn-tts {
-    background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+    background: var(--gradient-secondary);
     color: white;
+    min-width: 160px;
 }
 
-/* 文本输入 */
-.text-input-wrapper {
-    margin-bottom: 2rem;
-}
-
+/* 优化的文本输入区域 */
 .text-input {
     width: 100%;
-    min-height: 150px;
-    padding: 1rem;
+    min-height: 180px;
+    padding: 1.25rem;
     border: 2px solid var(--accent-light);
-    border-radius: 12px;
-    font-size: 1rem;
+    border-radius: 16px;
+    font-size: 1.1rem;
     resize: vertical;
     transition: all 0.3s ease;
     background: white;
+    color: var(--text-primary);
 }
 
 .text-input:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 4px var(--accent-light);
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
 }
 
-/* 结果显示 */
+/* 改进的结果显示区域 */
 .result-wrapper {
     background: var(--workspace-color);
-    box-shadow: 0 4px 20px var(--shadow-color);
-    border-radius: 20px;
-    padding: 2rem;
-    margin-top: 2rem;
-    animation: slideUp 0.5s ease forwards;
-}
-
-.result-header h3 {
-    color: var(--primary-color);
-    font-weight: 600;
-    margin-bottom: 1.5rem;
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow: 0 8px 30px var(--shadow-color);
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideUpFade 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .sentiment-section {
     display: grid;
-    gap: 1rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
 }
 
 .sentiment-item {
+    background: var(--accent-light);
+    padding: 1.5rem;
+    border-radius: 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
-    background: var(--accent-light);
-    border-radius: 12px;
+    transition: transform 0.3s ease;
 }
 
-.sentiment-item .label {
-    font-weight: 500;
-    color: var(--text-primary);
+.sentiment-item:hover {
+    transform: translateY(-2px);
 }
 
-.sentiment-item .value {
-    font-weight: 600;
-    color: var(--primary-color);
-}
-
-/* 进度条样式 */
+/* 优化的进度条样式 */
 .probability-section {
     background: white;
-    padding: 1.5rem;
-    border-radius: 12px;
-}
-
-.probability-section h4 {
-    font-size: 1.1rem;
-    font-weight: 500;
-    margin-bottom: 1rem;
-    color: var(--text-primary);
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(124, 58, 237, 0.05);
 }
 
 .prob-item {
-    margin: 1rem 0;
-    display: flex;
+    margin: 1.5rem 0;
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 1.5rem;
     align-items: center;
-    gap: 1rem;
-}
-
-.emotion-label {
-    min-width: 80px;
-    font-weight: 500;
-    color: var(--text-secondary);
 }
 
 .progress {
-    flex-grow: 1;
     height: 12px;
     background: var(--accent-light);
     border-radius: 6px;
     overflow: hidden;
+    position: relative;
 }
 
 .progress-bar {
     height: 100%;
-    transition: width 0.6s ease;
     border-radius: 6px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        rgba(255,255,255,0) 0%,
+        rgba(255,255,255,0.2) 50%,
+        rgba(255,255,255,0) 100%);
+    animation: shimmer 2s infinite;
 }
 
 /* 情感颜色 */
-.positive-bar { background: linear-gradient(to right, #22c55e, #16a34a); }
-.neutral-bar { background: linear-gradient(to right, #6366f1, #4f46e5); }
-.negative-bar { background: linear-gradient(to right, #ef4444, #dc2626); }
+.positive-bar { background: linear-gradient(to right, #10B981, #059669); }
+.neutral-bar { background: linear-gradient(to right, #7C3AED, #6D28D9); }
+.negative-bar { background: linear-gradient(to right, #EF4444, #DC2626); }
 
-/* 音频播放器 */
+/* 优化的音频播放器 */
 .audio-wrapper {
     background: var(--workspace-color);
-    box-shadow: 0 4px 20px var(--shadow-color);
-    padding: 1.5rem;
-    border-radius: 20px;
+    padding: 2rem;
+    border-radius: 24px;
+    box-shadow: 0 8px 30px var(--shadow-color);
     margin-top: 2rem;
+    opacity: 0;
+    animation: fadeIn 0.6s ease forwards;
 }
 
 .audio-header {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
     color: var(--primary-color);
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 1.2rem;
 }
 
 audio {
     width: 100%;
+    height: 48px;
     border-radius: 12px;
 }
 
 /* 加载动画 */
 .loading-section {
     text-align: center;
-    padding: 2rem;
+    padding: 3rem;
 }
 
 .loading-spinner {
-    width: 3rem;
-    height: 3rem;
+    width: 4rem;
+    height: 4rem;
     border: 4px solid var(--accent-light);
     border-top-color: var(--primary-color);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
 
-.loading-text {
-    margin-top: 1rem;
-    color: var(--text-secondary);
-    font-weight: 300;
+/* 动画关键帧 */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-/* 动画 */
-@keyframes slideUp {
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUpFade {
     from {
         opacity: 0;
         transform: translateY(20px);
@@ -280,12 +335,20 @@ audio {
 }
 
 @keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+    to { transform: rotate(360deg); }
 }
 
-/* 响应式设计 */
+@keyframes shimmer {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(100%); }
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 响应式优化 */
 @media (max-width: 768px) {
     .main-container {
         padding: 1rem;
@@ -308,13 +371,12 @@ audio {
         justify-content: center;
     }
 
-    .action-buttons {
-        flex-direction: column;
-        gap: 1rem;
+    .sentiment-section {
+        grid-template-columns: 1fr;
     }
 
-    .btn-analyze, .btn-tts {
-        width: 100%;
-        min-width: unset;
+    .prob-item {
+        grid-template-columns: 80px 1fr;
+        gap: 1rem;
     }
-} 
+}

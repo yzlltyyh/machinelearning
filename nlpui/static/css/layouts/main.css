@@ -1,0 +1,88 @@
+/* 主要内容布局 */
+.main-content {
+    display: grid;
+    gap: var(--spacing-8);
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: var(--spacing-8) var(--spacing-4);
+}
+
+/* 网格布局 */
+.grid-layout {
+    display: grid;
+    gap: var(--spacing-6);
+}
+
+.grid-2-cols {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-3-cols {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* 弹性布局 */
+.flex-layout {
+    display: flex;
+    gap: var(--spacing-6);
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+/* 内容区块 */
+.content-block {
+    background: white;
+    border-radius: 24px;
+    padding: var(--spacing-6);
+    box-shadow: var(--shadow-lg);
+}
+
+.content-block-lg {
+    padding: var(--spacing-8);
+}
+
+/* 分隔线 */
+.divider {
+    height: 1px;
+    background: var(--neutral-200);
+    margin: var(--spacing-6) 0;
+}
+
+/* 间距工具类 */
+.gap-2 { gap: var(--spacing-2); }
+.gap-4 { gap: var(--spacing-4); }
+.gap-6 { gap: var(--spacing-6); }
+.gap-8 { gap: var(--spacing-8); }
+
+.mt-2 { margin-top: var(--spacing-2); }
+.mt-4 { margin-top: var(--spacing-4); }
+.mt-6 { margin-top: var(--spacing-6); }
+.mt-8 { margin-top: var(--spacing-8); }
+
+.mb-2 { margin-bottom: var(--spacing-2); }
+.mb-4 { margin-bottom: var(--spacing-4); }
+.mb-6 { margin-bottom: var(--spacing-6); }
+.mb-8 { margin-bottom: var(--spacing-8); }
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .grid-2-cols,
+    .grid-3-cols {
+        grid-template-columns: 1fr;
+    }
+
+    .flex-layout {
+        flex-direction: column;
+    }
+
+    .content-block,
+    .content-block-lg {
+        padding: var(--spacing-4);
+    }
+}
