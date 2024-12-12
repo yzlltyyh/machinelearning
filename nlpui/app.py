@@ -22,15 +22,20 @@ def predict():
         data = request.get_json()
         text = data.get('text', '')
         
-        # 这里调用实际的NLP API
-        response = {
-            'sentiment': '积极',  # 这里替换为实际API返回的结果
-            'probabilities': [0.8, 0.1, 0.1],  # 示例数据
-            'confidence': 0.8
-        }
+        # 调用已有的proxy_predict函数来获取NLP分析结果
+        nlp_response = requests.post(
+            'https://nlp.capoo.live/predict',
+            json={'text': text},
+            headers={'Content-Type': 'application/json'}
+        )
+        
+        if nlp_response.status_code != 200:
+            return jsonify({'error': 'NLP service error'}), nlp_response.status_code
+            
+        result = nlp_response.json()
         
         # 添加CORS头
-        response = make_response(jsonify(response))
+        response = make_response(jsonify(result))
         response.headers.add('Access-Control-Allow-Origin', '*')
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
         return response

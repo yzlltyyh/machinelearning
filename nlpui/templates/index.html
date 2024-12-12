@@ -6,6 +6,8 @@
     <title>智能情感分析系统</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 添加 ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components/buttons.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components/cards.css') }}">
@@ -16,9 +18,16 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/layouts/header.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/layouts/main.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/layouts/results.css') }}">
+    <style>
+        .sentiment-chart {
+            width: 100%;
+            height: 300px;
+            margin: 20px 0;
+        }
+    </style>
 </head>
 <body>
-    <!-- 头部区域 -->
+    <!-- 保持原有的头部区域 -->
     <header class="header">
         <div class="header-decoration">
             <div class="decoration-circle decoration-circle-1"></div>
@@ -30,7 +39,7 @@
 
     <!-- 主要内容区域 -->
     <main class="main-content">
-        <!-- 输入区域 -->
+        <!-- 保持原有的输入区域 -->
         <section class="content-block content-block-lg animate-fade-in-up">
             <div class="voice-controls">
                 <div class="btn-group">
@@ -70,10 +79,12 @@
             <p class="loading-text">正在分析，请稍候...</p>
         </div>
 
-        <!-- 结果显示区域 -->
-        <section id="results" class="results-container"></section>
+        <!-- 修改结果显示区域，添加饼图 -->
+        <section id="results" class="results-container">
+            <!-- 饼图将通过JavaScript动态插入到这里 -->
+        </section>
 
-        <!-- 音频播放区域 -->
+        <!-- 只修改音频播放区域部分 -->
         <section class="audio-section" style="display: none;">
             <div class="audio-player">
                 <div class="audio-header">
@@ -108,6 +119,322 @@
         </section>
     </main>
 
-    <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <!-- 修改JavaScript部分 -->
+    <script>
+        // 语音输入相关函数
+        function initVoiceInput() {
+            const startBtn = document.getElementById('startVoice');
+            const stopBtn = document.getElementById('stopVoice');
+            const statusBadge = document.querySelector('.status-badge');
+            const textArea = document.getElementById('inputText');
+
+            if ('webkitSpeechRecognition' in window) {
+                const recognition = new webkitSpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.lang = 'zh-CN';
+
+                startBtn.addEventListener('click', () => {
+                    recognition.start();
+                    startBtn.disabled = true;
+                    stopBtn.disabled = false;
+                    statusBadge.textContent = '正在录音...';
+                });
+
+                stopBtn.addEventListener('click', () => {
+                    recognition.stop();
+                    startBtn.disabled = false;
+                    stopBtn.disabled = true;
+                    statusBadge.textContent = '等待输入';
+                });
+
+                recognition.onresult = (event) => {
+                    let finalTranscript = '';
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript;
+                        }
+                    }
+                    if (finalTranscript) {
+                        textArea.value = finalTranscript;
+                    }
+                };
+            } else {
+                startBtn.disabled = true;
+                stopBtn.disabled = true;
+                statusBadge.textContent = '浏览器不支持语音输入';
+            }
+        }
+
+        // 初始化语音输入
+        initVoiceInput();
+
+        // 初始化饼图
+        let myChart = null;
+
+        function createSentimentChart(container) {
+            if (!myChart) {
+                myChart = echarts.init(container);
+            }
+            return myChart;
+        }
+
+        function updateChart(probabilities) {
+            const chartContainer = document.querySelector('#sentiment-chart');
+            if (!chartContainer) {
+                return;
+            }
+
+            const chart = createSentimentChart(chartContainer);
+            const option = {
+                title: {
+                    text: '情感概率分布',
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c}%'
+                },
+                legend: {
+                    orient: 'horizontal',
+                    bottom: 'bottom'
+                },
+                series: [
+                    {
+                        type: 'pie',
+                        radius: '50%',
+                        data: [
+                            { value: (probabilities[0] * 100).toFixed(1), name: '积极' },
+                            { value: (probabilities[1] * 100).toFixed(1), name: '中性' },
+                            { value: (probabilities[2] * 100).toFixed(1), name: '消极' }
+                        ],
+                        emphasis: {
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+                    }
+                ]
+            };
+            chart.setOption(option);
+        }
+
+        // 分析情感的函数
+        async function analyzeSentiment() {
+            const text = document.querySelector('#inputText').value;
+            if (!text) return;
+
+            // 显示加载指示器
+            document.getElementById('loadingIndicator').classList.remove('d-none');
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text })
+                });
+                const data = await response.json();
+                updateResults(data);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                // 隐藏加载指示器
+                document.getElementById('loadingIndicator').classList.add('d-none');
+            }
+        }
+
+        // 生成语音的函数
+        async function generateTTS() {
+            const text = document.querySelector('#inputText').value;
+            if (!text) return;
+
+            try {
+                const response = await fetch(`/api/tts?text=${encodeURIComponent(text)}`);
+                if (!response.ok) throw new Error('TTS generation failed');
+
+                const blob = await response.blob();
+                const audioUrl = URL.createObjectURL(blob);
+                
+                // 显示音频播放区域
+                const audioSection = document.querySelector('.audio-section');
+                audioSection.style.display = 'block';
+                
+                // 更新音频源
+                const audioPlayer = document.querySelector('#ttsAudio');
+                if (audioPlayer) {
+                    audioPlayer.src = audioUrl;
+                    // 初始化音频播放器控件
+                    initAudioPlayer();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // 添加音频播放器初始化函数
+        function initAudioPlayer() {
+            const audio = document.querySelector('#ttsAudio');
+            const playButton = document.querySelector('.play-button');
+            const progressBar = document.querySelector('.audio-progress-bar');
+            const progressHandle = document.querySelector('.audio-progress-handle');
+            const currentTimeSpan = document.querySelector('.current-time');
+            const durationSpan = document.querySelector('.duration');
+            const volumeControl = document.querySelector('.volume-control');
+            const volumeLevel = document.querySelector('.volume-level');
+
+            // 播放/暂停按钮点击事件
+            playButton.onclick = function() {
+                if (audio.paused) {
+                    audio.play();
+                    playButton.innerHTML = '<i class="fas fa-pause"></i>';
+                } else {
+                    audio.pause();
+                    playButton.innerHTML = '<i class="fas fa-play"></i>';
+                }
+            };
+
+            // 更新进度条
+            audio.ontimeupdate = function() {
+                const percent = (audio.currentTime / audio.duration) * 100;
+                progressBar.style.width = percent + '%';
+                progressHandle.style.left = percent + '%';
+                currentTimeSpan.textContent = formatTime(audio.currentTime);
+            };
+
+            // 音频加载完成后显示总时长
+            audio.onloadedmetadata = function() {
+                durationSpan.textContent = formatTime(audio.duration);
+            };
+
+            // 进度条点击事件
+            const progress = document.querySelector('.audio-progress');
+            progress.onclick = function(e) {
+                const rect = progress.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                audio.currentTime = percent * audio.duration;
+            };
+
+            // 音量控制
+            volumeControl.onclick = function(e) {
+                const rect = volumeControl.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                audio.volume = Math.max(0, Math.min(1, percent));
+                volumeLevel.style.width = (percent * 100) + '%';
+            };
+
+            // 格式化时间
+            function formatTime(seconds) {
+                const minutes = Math.floor(seconds / 60);
+                seconds = Math.floor(seconds % 60);
+                return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            // 自动播放
+            audio.play().catch(e => console.log('Auto-play prevented:', e));
+        }
+
+        // 窗口大小改变时重绘图表
+        window.addEventListener('resize', function() {
+            if (myChart) {
+                myChart.resize();
+            }
+        });
+
+        // 绑定按钮事件
+        document.getElementById('analyzeBtn').addEventListener('click', analyzeSentiment);
+        document.getElementById('generateTTS').addEventListener('click', generateTTS);
+
+        // 修改结果更新函数
+        function updateResults(data) {
+            const resultsContainer = document.getElementById('results');
+            
+            // 添加调试日志
+            console.log('Received data:', data);
+            console.log('Probabilities:', data.probabilities);
+            
+            // 创建结果HTML
+            const resultHTML = `
+                <div class="result-card animate-fade-in">
+                    <div class="result-header">
+                        <h3>分析结果</h3>
+                    </div>
+                    <div class="result-content">
+                        <div class="result-item">
+                            <span class="label">情感倾向：</span>
+                            <span class="value">${data.sentiment}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">置信度：</span>
+                            <span class="value">${(data.confidence * 100).toFixed(1)}%</span>
+                        </div>
+                        <div id="sentiment-chart" class="sentiment-chart"></div>
+                    </div>
+                </div>
+            `;
+            
+            resultsContainer.innerHTML = resultHTML;
+            
+            // 确保等待DOM更新后再初始化图表
+            setTimeout(() => {
+                const chartContainer = document.querySelector('#sentiment-chart');
+                if (chartContainer) {
+                    // 重新初始化图表
+                    if (myChart) {
+                        myChart.dispose();  // 销毁旧的图表实例
+                    }
+                    myChart = echarts.init(chartContainer);
+                    
+                    // 处理嵌套数组的情况
+                    let probArray = Array.isArray(data.probabilities[0]) ? 
+                                  data.probabilities[0] : 
+                                  data.probabilities;
+                    
+                    const option = {
+                        title: {
+                            text: '情感概率分布',
+                            left: 'center'
+                        },
+                        tooltip: {
+                            trigger: 'item',
+                            formatter: '{b}: {c}%'
+                        },
+                        legend: {
+                            orient: 'horizontal',
+                            bottom: 'bottom'
+                        },
+                        series: [
+                            {
+                                type: 'pie',
+                                radius: '50%',
+                                data: [
+                                    { value: (probArray[0] * 100).toFixed(1), name: '积极' },
+                                    { value: (probArray[1] * 100).toFixed(1), name: '中性' },
+                                    { value: (probArray[2] * 100).toFixed(1), name: '消极' }
+                                ],
+                                emphasis: {
+                                    itemStyle: {
+                                        shadowBlur: 10,
+                                        shadowOffsetX: 0,
+                                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                    }
+                                }
+                            }
+                        ]
+                    };
+                    
+                    // 添加调试日志
+                    console.log('Chart options:', option);
+                    
+                    myChart.setOption(option);
+                } else {
+                    console.error('Chart container not found');
+                }
+            }, 100);  // 增加延时确保DOM完全更新
+        }
+    </script>
 </body>
 </html>
