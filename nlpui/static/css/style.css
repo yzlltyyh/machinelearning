@@ -1,0 +1,320 @@
+/* 全局样式 */
+:root {
+    --primary-color: #6366f1;
+    --secondary-color: #8b5cf6;
+    --success-color: #22c55e;
+    --background-color: #eef2ff;
+    --workspace-color: #ffffff;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --accent-light: #e0e7ff;
+    --accent-dark: #4f46e5;
+    --shadow-color: rgba(99, 102, 241, 0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Sans SC', sans-serif;
+    background: var(--background-color);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+/* 布局容器 */
+.main-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* 头部样式 */
+.header-section {
+    margin-bottom: 4rem;
+    padding: 3rem 0;
+}
+
+.main-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    letter-spacing: -0.5px;
+}
+
+.subtitle {
+    font-size: 1.25rem;
+    font-weight: 300;
+    color: var(--text-secondary);
+}
+
+/* 内容区域 */
+.content-section {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* 输入区域 */
+.input-section {
+    background: var(--workspace-color);
+    padding: 2.5rem;
+    border-radius: 20px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 20px var(--shadow-color);
+}
+
+/* 语音控制 */
+.voice-controls {
+    margin-bottom: 2rem;
+}
+
+.control-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.btn {
+    font-weight: 500;
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-voice {
+    background: white;
+    color: var(--primary-color);
+    box-shadow: 0 2px 10px var(--shadow-color);
+    min-width: 160px;
+}
+
+.btn-voice:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px var(--shadow-color);
+}
+
+.btn-analyze {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-dark));
+    color: white;
+}
+
+.btn-tts {
+    background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+    color: white;
+}
+
+/* 文本输入 */
+.text-input-wrapper {
+    margin-bottom: 2rem;
+}
+
+.text-input {
+    width: 100%;
+    min-height: 150px;
+    padding: 1rem;
+    border: 2px solid var(--accent-light);
+    border-radius: 12px;
+    font-size: 1rem;
+    resize: vertical;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.text-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px var(--accent-light);
+}
+
+/* 结果显示 */
+.result-wrapper {
+    background: var(--workspace-color);
+    box-shadow: 0 4px 20px var(--shadow-color);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-top: 2rem;
+    animation: slideUp 0.5s ease forwards;
+}
+
+.result-header h3 {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.sentiment-section {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.sentiment-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: var(--accent-light);
+    border-radius: 12px;
+}
+
+.sentiment-item .label {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.sentiment-item .value {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* 进度条样式 */
+.probability-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+}
+
+.probability-section h4 {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.prob-item {
+    margin: 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.emotion-label {
+    min-width: 80px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.progress {
+    flex-grow: 1;
+    height: 12px;
+    background: var(--accent-light);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    transition: width 0.6s ease;
+    border-radius: 6px;
+}
+
+/* 情感颜色 */
+.positive-bar { background: linear-gradient(to right, #22c55e, #16a34a); }
+.neutral-bar { background: linear-gradient(to right, #6366f1, #4f46e5); }
+.negative-bar { background: linear-gradient(to right, #ef4444, #dc2626); }
+
+/* 音频播放器 */
+.audio-wrapper {
+    background: var(--workspace-color);
+    box-shadow: 0 4px 20px var(--shadow-color);
+    padding: 1.5rem;
+    border-radius: 20px;
+    margin-top: 2rem;
+}
+
+.audio-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+audio {
+    width: 100%;
+    border-radius: 12px;
+}
+
+/* 加载动画 */
+.loading-section {
+    text-align: center;
+    padding: 2rem;
+}
+
+.loading-spinner {
+    width: 3rem;
+    height: 3rem;
+    border: 4px solid var(--accent-light);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loading-text {
+    margin-top: 1rem;
+    color: var(--text-secondary);
+    font-weight: 300;
+}
+
+/* 动画 */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .main-container {
+        padding: 1rem;
+    }
+
+    .main-title {
+        font-size: 2.5rem;
+    }
+
+    .input-section {
+        padding: 1.5rem;
+    }
+
+    .control-buttons {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .btn-analyze, .btn-tts {
+        width: 100%;
+        min-width: unset;
+    }
+} 
