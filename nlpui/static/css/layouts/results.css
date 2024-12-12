@@ -1,96 +1,138 @@
-/* 结果显示区域布局 */
+/* 结果区域样式 */
 .results-container {
-    opacity: 0;
-    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    margin-top: 2rem;
+    width: 100%;
+    max-width: 800px;
+    padding: 0 1rem;
 }
 
-/* 情感分析结果卡片 */
-.sentiment-card {
-    background: white;
-    border-radius: 24px;
-    padding: var(--spacing-8);
-    box-shadow: var(--shadow-lg);
-    margin-bottom: var(--spacing-6);
+.result-wrapper {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* 情感指标网格 */
-.sentiment-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: var(--spacing-6);
-    margin-bottom: var(--spacing-8);
-}
-
-/* 情感指标项 */
-.sentiment-item {
-    background: var(--primary-100);
-    padding: var(--spacing-6);
-    border-radius: 16px;
+.sentiment-section {
     display: flex;
-    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.sentiment-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    transition: transform var(--transition-normal);
+    text-align: center;
 }
 
-.sentiment-item:hover {
-    transform: translateY(-2px);
+.sentiment-item .label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.5rem;
 }
 
-.sentiment-label {
+.sentiment-item .value {
+    font-size: 1.2rem;
     font-weight: 600;
-    color: var(--neutral-700);
-}
-
-.sentiment-value {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--primary-500);
+    color: #333;
 }
 
 /* 概率分布区域 */
-.probability-container {
-    background: white;
-    padding: var(--spacing-6);
-    border-radius: 16px;
-    box-shadow: var(--shadow-md);
+.probability-section {
+    margin-top: 1rem;
 }
 
-.probability-header {
-    margin-bottom: var(--spacing-6);
+.probability-section h4 {
+    margin-bottom: 1rem;
+    color: #333;
+    font-size: 1rem;
 }
 
-.probability-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--neutral-800);
+.probability-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
-/* 图表区域 */
-.chart-container {
-    margin-top: var(--spacing-8);
-    padding: var(--spacing-6);
-    background: var(--neutral-50);
-    border-radius: 16px;
+.prob-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
-/* 动画效果 */
-.result-animate-in {
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1 ) forwards;
+.emotion-label {
+    width: 80px;
+    font-size: 0.9rem;
+    color: #666;
+    text-align: right;
 }
 
-/* 响应式调整 */
-@media (max-width: 768px) {
-    .sentiment-grid {
-        grid-template-columns: 1fr;
-    }
+.progress {
+    flex: 1;
+    height: 24px;
+    background-color: #f5f5f5;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+}
 
-    .sentiment-item {
-        padding: var(--spacing-4);
-    }
+.progress-bar {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: width 0.6s ease-in-out;
+}
 
-    .probability-container {
-        padding: var(--spacing-4);
-    }
+.progress-bar-积极 {
+    background-color: #4CAF50;
+}
+
+.progress-bar-中性 {
+    background-color: #2196F3;
+}
+
+.progress-bar-消极 {
+    background-color: #f44336;
+}
+
+/* Loading指示器样式 */
+.loading-section {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin: 2rem auto;
+    max-width: 800px;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+.loading-text {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }

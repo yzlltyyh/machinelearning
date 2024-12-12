@@ -3,13 +3,20 @@ export class SentimentAnalyzer {
     constructor() {
         this.loadingIndicator = document.getElementById('loadingIndicator');
         this.resultsContainer = document.getElementById('results');
+        this.isAnalyzing = false;
     }
 
     async analyzeText(text) {
         if (!text.trim()) {
-            throw new Error('请输入要分析的文本');
+            alert('请输入要分析的文本');
+            return;
         }
 
+        if (this.isAnalyzing) {
+            return;
+        }
+
+        this.isAnalyzing = true;
         this.showLoading();
 
         try {
@@ -20,6 +27,7 @@ export class SentimentAnalyzer {
             this.handleError(error);
         } finally {
             this.hideLoading();
+            this.isAnalyzing = false;
         }
     }
 
@@ -47,9 +55,17 @@ export class SentimentAnalyzer {
             throw new Error('收到无效的概率数据');
         }
 
-        const sum = data.probabilities.reduce((a, b) => parseFloat(a) + parseFloat(b), 0);
+        // 确保所有概率都是有效的数字
+        data.probabilities = data.probabilities.map(prob => {
+            const value = parseFloat(prob);
+            return isNaN(value) ? 0 : value;
+        });
+
+        const sum = data.probabilities.reduce((a, b) => a + b, 0);
         if (Math.abs(sum - 1) > 0.1) {
             console.warn('概率总和异常:', sum);
+            // 归一化概率值
+            data.probabilities = data.probabilities.map(prob => prob / sum);
         }
 
         return data;
@@ -58,7 +74,8 @@ export class SentimentAnalyzer {
     displayResults(data) {
         const resultHTML = this.createResultHTML(data);
         this.resultsContainer.innerHTML = resultHTML;
-        this.animateResults();
+        // 延迟一帧执行动画，确保DOM更新完成
+        requestAnimationFrame(() => this.animateResults());
     }
 
     createResultHTML(data) {
@@ -71,7 +88,7 @@ export class SentimentAnalyzer {
                     </div>
                     <div class="sentiment-item">
                         <span class="label">置信度</span>
-                        <span class="value">${(data.confidence * 100).toFixed(2)}%</span>
+                        <span class="value">${(data.confidence * 100).toFixed(1)}%</span>
                     </div>
                 </div>
                 <div class="probability-section">
@@ -85,10 +102,11 @@ export class SentimentAnalyzer {
     }
 
     createProbabilityBars(probabilities) {
+        // 确保emotions的顺序与后端返回的概率数组顺序一致
         const emotions = ['积极', '中性', '消极'];
         
         return probabilities.map((prob, index) => {
-            const percentage = (prob * 100).toFixed(2);
+            const percentage = Math.max(0, Math.min(100, prob * 100)).toFixed(1);
             const barClass = `progress-bar-${emotions[index].toLowerCase()}`;
             
             return `
@@ -96,7 +114,7 @@ export class SentimentAnalyzer {
                     <span class="emotion-label">${emotions[index]}</span>
                     <div class="progress">
                         <div class="progress-bar ${barClass}"
-                             style="width: ${percentage}%"
+                             style="width: 0%"
                              role="progressbar"
                              aria-valuenow="${percentage}"
                              aria-valuemin="0"
@@ -112,19 +130,21 @@ export class SentimentAnalyzer {
     animateResults() {
         const elements = this.resultsContainer.querySelectorAll('.progress-bar');
         elements.forEach((element, index) => {
+            const percentage = element.getAttribute('aria-valuenow');
             setTimeout(() => {
-                element.style.width = element.getAttribute('aria-valuenow') + '%';
-            }, index * 100);
+                element.style.transition = 'width 0.6s ease-in-out';
+                element.style.width = `${percentage}%`;
+            }, index * 150);
         });
     }
 
     showLoading() {
-        this.loadingIndicator.classList.remove('d-none');
+        this.loadingIndicator.style.display = 'flex';
         this.resultsContainer.innerHTML = '';
     }
 
     hideLoading() {
-        this.loadingIndicator.classList.add('d-none');
+        this.loadingIndicator.style.display = 'none';
     }
 
     handleError(error) {
