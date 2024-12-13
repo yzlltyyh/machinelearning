@@ -81,15 +81,15 @@
         }
 
         .audio-player[data-emotion='positive'] {
-            --emotion-color: #4CAF50;
+            --emotion-color: #81c784;  /* 更柔和的绿色 */
         }
 
         .audio-player[data-emotion='negative'] {
-            --emotion-color: #f44336;
+            --emotion-color: #e57373;  /* 更柔和的红色 */
         }
 
         .audio-player[data-emotion='neutral'] {
-            --emotion-color: #607D8B;
+            --emotion-color: #90a4ae;  /* 更柔和的灰色 */
         }
 
         .play-button {
@@ -341,18 +341,18 @@
             const sentimentElement = document.querySelector('.result-content .value');
             let sentiment = 'neutral';
             let emotionEmoji = '😐'; // 默认表情
-            let emotionColor = '#607D8B'; // 默认颜色
+            let emotionColor = '#90a4ae'; // 默认使用柔和的灰色
 
             if (sentimentElement) {
                 const sentimentText = sentimentElement.textContent;
                 if (sentimentText.includes('积极') || sentimentText.includes('正面')) {
                     sentiment = 'positive';
                     emotionEmoji = '😊';
-                    emotionColor = '#4CAF50';
+                    emotionColor = '#81c784';
                 } else if (sentimentText.includes('消极') || sentimentText.includes('负面')) {
                     sentiment = 'negative';
                     emotionEmoji = '😔';
-                    emotionColor = '#f44336';
+                    emotionColor = '#e57373';
                 }
             }
 
@@ -570,9 +570,8 @@
                 }
             }, 100);
 
-            // 在分析完成后，如果用户希望自动生成语音，可以在这里调用generateTTS
-            // 这是一个可选功能，取决于产品需求
-            // generateTTS();
+            // 在分析完成后自动生成语音
+            generateTTS();
         }
     </script>
 </body>
