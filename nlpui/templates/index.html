@@ -63,21 +63,31 @@
         .audio-player {
             border: 2px solid var(--emotion-color);
             transition: border-color 0.3s ease;
+            border-radius: 12px;
+            overflow: hidden;
         }
 
         .audio-header {
             background-color: var(--emotion-color);
             transition: background-color 0.3s ease;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .emotion-indicator {
             display: flex;
             align-items: center;
             gap: 8px;
+            font-size: 0.9em;
         }
 
         .emotion-emoji {
             font-size: 1.2em;
+            line-height: 1;
         }
 
         .audio-player[data-emotion='positive'] {
@@ -96,6 +106,12 @@
             background-color: var(--emotion-color);
             border: none;
             transition: background-color 0.3s ease;
+            border-radius: 50%;
+        }
+
+        .audio-progress {
+            border-radius: 4px;
+            overflow: hidden;
         }
 
         .audio-progress-bar {
@@ -106,6 +122,45 @@
         .volume-level {
             background-color: var(--emotion-color);
             transition: background-color 0.3s ease;
+        }
+
+        /* 添加结果区域的两列布局样式 */
+        .results-layout {
+            display: grid;
+            grid-template-columns: 1fr 300px;  /* 分析结果占据更多空间 */
+            gap: 20px;
+            align-items: start;
+            margin: 20px 0;
+        }
+        
+        /* 在小屏幕上切换为单列布局 */
+        @media (max-width: 768px) {
+            .results-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* 固定音频播放器的位置 */
+        .audio-section {
+            position: sticky;
+            top: 20px;
+        }
+
+        .audio-controls {
+            padding: 15px;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+        .volume-slider {
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .audio-title {
+            flex: 1;
+            font-size: 0.95em;
+            font-weight: 500;
         }
     </style>
 </head>
@@ -162,47 +217,48 @@
             <p class="loading-text">正在分析，请稍候...</p>
         </div>
 
-        <!-- 修改结果显示区域，添加饼图 -->
-        <section id="results" class="results-container">
-            <!-- 饼图将通过JavaScript动态插入到这里 -->
-        </section>
+        <!-- 修改结果显示区域的结构 -->
+        <div class="results-layout">
+            <section id="results" class="results-container">
+                <!-- 饼图将通过JavaScript动态插入到这里 -->
+            </section>
 
-        <!-- 只修改音频播放区域部分 -->
-        <section class="audio-section" style="display: none;">
-            <div class="audio-player">
-                <div class="audio-header">
-                    <span class="emotion-indicator">
-                        <i class="fas fa-headphones"></i>
-                        <span class="emotion-emoji"></span>
-                    </span>
-                    <span class="audio-title">语音播放</span>
-                </div>
-                <div class="audio-controls">
-                    <button class="play-button">
-                        <i class="fas fa-play"></i>
-                    </button>
-                    <div class="audio-progress">
-                        <div class="audio-progress-bar"></div>
-                        <div class="audio-progress-handle"></div>
+            <section class="audio-section" style="display: none;">
+                <div class="audio-player">
+                    <div class="audio-header">
+                        <span class="emotion-indicator">
+                            <i class="fas fa-headphones"></i>
+                            <span class="emotion-emoji"></span>
+                        </span>
+                        <span class="audio-title">语音播放</span>
                     </div>
-                    <div class="audio-time">
-                        <span class="current-time">0:00</span>
-                        <span>/</span>
-                        <span class="duration">0:00</span>
-                    </div>
-                    <div class="volume-control">
-                        <i class="fas fa-volume-up"></i>
-                        <div class="volume-slider">
-                            <div class="volume-level" style="width: 100%"></div>
+                    <div class="audio-controls">
+                        <button class="play-button">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <div class="audio-progress">
+                            <div class="audio-progress-bar"></div>
+                            <div class="audio-progress-handle"></div>
+                        </div>
+                        <div class="audio-time">
+                            <span class="current-time">0:00</span>
+                            <span>/</span>
+                            <span class="duration">0:00</span>
+                        </div>
+                        <div class="volume-control">
+                            <i class="fas fa-volume-up"></i>
+                            <div class="volume-slider">
+                                <div class="volume-level" style="width: 100%"></div>
+                            </div>
                         </div>
                     </div>
+                    <audio id="ttsAudio">
+                        <source src="" type="audio/wav">
+                        您的浏览器不支持音频播放
+                    </audio>
                 </div>
-                <audio id="ttsAudio">
-                    <source src="" type="audio/wav">
-                    您的浏览器不支持音频播放
-                </audio>
-            </div>
-        </section>
+            </section>
+        </div>
     </main>
 
     <!-- 修改JavaScript部分 -->
@@ -363,9 +419,10 @@
                 const blob = await response.blob();
                 const audioUrl = URL.createObjectURL(blob);
                 
-                // 显示音频播放区域
+                // 修改显示音频播放区域的方式
                 const audioSection = document.querySelector('.audio-section');
-                audioSection.style.display = 'block';
+                audioSection.style.display = 'flex';  // 使用flex布局使内容居中
+                audioSection.style.flexDirection = 'column';
                 
                 // 更新音频源和样式
                 const audioPlayer = document.querySelector('#ttsAudio');
