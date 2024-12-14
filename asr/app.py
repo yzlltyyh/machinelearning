@@ -1,21 +1,101 @@
 import os
 import uuid
+import json
+import hashlib
 import subprocess
+import re
 from pathlib import Path
+from typing import List, Optional
 from fastapi import FastAPI, UploadFile, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic_settings import BaseSettings
 import google.generativeai as genai
 import mimetypes
 import tempfile
-import shutil
+import openai
+from dotenv import load_dotenv
+
+# 加载环境变量
+load_dotenv()
 
 class Settings(BaseSettings):
     gemini_api_key: str
+    openai_api_key: str
+    openai_base_url: str
     temp_dir: str = "temp"
+    cache_dir: str = "cache"
     
     class Config:
         env_file = ".env"
+
+class TextSplitter:
+    SYSTEM_PROMPT = """
+    你是一名句子拆分专家，擅长将没有断句的一整段文本，拆分成一句句文本，每句文本之间用<br>隔开。
+    要求：
+    1. 不按照完整的句子拆分段落，只需按照语义进行拆分段落，注意保持句子结构的完整性。
+    2. 不要修改原句的任何内容，也不要添加任何内容，你只需要每句文本之间添加<br>隔开。
+    3. 直接返回拆分后的文本，不要返回任何其他说明内容，不需要任何标点符号。
+    """
+    
+    def __init__(self, api_key: str, base_url: str, cache_dir: str):
+        self.cache_dir = Path(cache_dir)
+        self.cache_dir.mkdir(exist_ok=True)
+        self.client = openai.OpenAI(
+            api_key=api_key,
+            base_url=base_url
+        )
+    
+    def get_cache_key(self, text: str) -> str:
+        return hashlib.md5(f"{text}_gemini-2.0-flash-exp".encode()).hexdigest()
+    
+    def get_cache(self, text: str) -> Optional[List[str]]:
+        cache_key = self.get_cache_key(text)
+        cache_file = self.cache_dir / f"{cache_key}.json"
+        if cache_file.exists():
+            try:
+                return json.loads(cache_file.read_text(encoding='utf-8'))
+            except (IOError, json.JSONDecodeError):
+                return None
+        return None
+    
+    def set_cache(self, text: str, result: List[str]) -> None:
+        cache_key = self.get_cache_key(text)
+        cache_file = self.cache_dir / f"{cache_key}.json"
+        try:
+            cache_file.write_text(
+                json.dumps(result, ensure_ascii=False),
+                encoding='utf-8'
+            )
+        except IOError:
+            pass
+    
+    async def split_text(self, text: str, use_cache: bool = True) -> List[str]:
+        if use_cache:
+            cached_result = self.get_cache(text)
+            if cached_result:
+                return cached_result
+        
+        prompt = f"请你对下面句子使用<br>进行分割：\n{text}"
+        try:
+            response = self.client.chat.completions.create(
+                model="gemini-2.0-flash-exp",
+                messages=[
+                    {"role": "system", "content": self.SYSTEM_PROMPT},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.1
+            )
+            result = response.choices[0].message.content
+            # 清理结果中的多余换行符
+            result = re.sub(r'\n+', '', result)
+            split_result = [segment.strip() for segment in result.split("<br>") if segment.strip()]
+            
+            self.set_cache(text, split_result)
+            return split_result
+            
+        except Exception as e:
+            print(f"[!] 文本断句失败: {e}")
+            return []
 
 class MediaProcessor:
     SUPPORTED_VIDEO_FORMATS = {
@@ -105,11 +185,11 @@ class GeminiASR:
     def __init__(self, api_key: str):
         self.api_key = api_key
         genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
+        self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
 
     async def transcribe_audio(self, file_content: bytes, mime_type: str) -> str:
         try:
-            prompt = "Generate a verbatim transcript of the audio. Output only the transcribed text without any additional explanations or formatting."
+            prompt = "生成音频的逐字转写。只输出转写的文本,不要添加任何额外的解释或格式。"
             
             audio_data = {
                 "mime_type": mime_type,
@@ -133,10 +213,15 @@ app = FastAPI(
 try:
     settings = Settings()
 except Exception:
-    raise Exception("未找到 GEMINI_API_KEY 环境变量。请确保已经设置了环境变量或创建了.env文件。")
+    raise Exception("请确保已经设置了所有必要的环境变量")
 
 media_processor = MediaProcessor(settings.temp_dir)
 asr = GeminiASR(settings.gemini_api_key)
+text_splitter = TextSplitter(
+    settings.openai_api_key,
+    settings.openai_base_url,
+    settings.cache_dir
+)
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
@@ -235,7 +320,8 @@ async def read_root():
             
             <h3>返回格式</h3>
             <pre><code>{
-    "transcript": "转写的文本内容"
+    "transcript": "转写的文本内容",
+    "segments": ["断句后的", "文本段落"]
 }</code></pre>
             
             <h3>错误码</h3>
@@ -255,24 +341,34 @@ async def read_root():
 @app.post("/api/v1/transcribe")
 async def transcribe_media(file: UploadFile):
     """
-    转写音视频文件为文本
+    转写音视频文件为文本，并进行断句处理
     """
     try:
+        # 检查文件大小
         file_size = 0
         content = await file.read()
         file_size = len(content)
-        await file.seek(0)  # 重置文件指针
+        await file.seek(0)
         
-        if file_size > 20 * 1024 * 1024:  # 20MB
+        if file_size > 20 * 1024 * 1024:
             raise HTTPException(status_code=400, detail="文件大小超过20MB限制")
         
+        # 处理音视频
         try:
             audio_content, mime_type = await media_processor.process_media(file)
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
-            
+        
+        # 转写文本
         transcript = await asr.transcribe_audio(audio_content, mime_type)
-        return {"transcript": transcript}
+        
+        # 对转写文本进行断句
+        split_result = await text_splitter.split_text(transcript)
+        
+        return {
+            "transcript": transcript,  # 原始转写文本
+            "segments": split_result   # 断句后的文本段落
+        }
         
     except Exception as e:
         if "未安装ffmpeg" in str(e):

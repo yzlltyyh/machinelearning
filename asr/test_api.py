@@ -30,10 +30,24 @@ def test_asr_api(file_path: str, api_url: str = "http://127.0.0.1:2323"):
         if response.status_code == 200:
             result = response.json()
             print("✅ 测试成功！")
-            print("\n📝 转写结果：")
+            
+            # 显示原始转写结果
+            print("\n📝 原始转写结果：")
             print("----------------------------------")
             print(result['transcript'])
             print("----------------------------------")
+            
+            # 显示断句结果
+            if 'segments' in result and result['segments']:
+                print("\n📋 断句结果：")
+                print("----------------------------------")
+                for i, segment in enumerate(result['segments'], 1):
+                    print(f"{i}. {segment}")
+                print("----------------------------------")
+                print(f"共 {len(result['segments'])} 个片段")
+            else:
+                print("\n⚠️ 未返回断句结果")
+                
         else:
             print(f"❌ 请求失败 (状态码: {response.status_code})")
             print(f"错误信息: {response.text}")
