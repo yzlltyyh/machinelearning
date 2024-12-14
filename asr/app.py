@@ -35,6 +35,9 @@ class TextSplitter:
     1. 不按照完整的句子拆分段落，只需按照语义进行拆分段落，注意保持句子结构的完整性。
     2. 不要修改原句的任何内容，也不要添加任何内容，你只需要每句文本之间添加<br>隔开。
     3. 直接返回拆分后的文本，不要返回任何其他说明内容，不需要任何标点符号。
+    4. 对于中文每个拆分句文本总字数不超过40；对于英文每个断句单词(word)总数目不超过40。
+    5. 对于asr产生的多余的语气词，或者重复的无意义的字，请忽略，明显的错别字请修正。
+    6. 如果是中文的话，输出简体中文。
     """
     
     def __init__(self, api_key: str, base_url: str, cache_dir: str):
@@ -189,7 +192,7 @@ class GeminiASR:
 
     async def transcribe_audio(self, file_content: bytes, mime_type: str) -> str:
         try:
-            prompt = "生成音频的逐字转写。只输出转写的文本,不要添加任何额外的解释或格式。"
+            prompt = "生成音频的逐字转写。只输出转写的文本,不要添加任何额外的解释或格式，如果是中文，请转录成简体中文。"
             
             audio_data = {
                 "mime_type": mime_type,
@@ -313,7 +316,7 @@ async def read_root():
             
             <h3>限制条件</h3>
             <div class="note">
-                <p>• 文件大小上限：20MB</p>
+                <p>• 文件大小上限：1GB</p>
                 <p>• 需要安装ffmpeg才能处理视频文件</p>
                 <p>• 仅支持上述列出的音视频格式</p>
             </div>
@@ -350,8 +353,8 @@ async def transcribe_media(file: UploadFile):
         file_size = len(content)
         await file.seek(0)
         
-        if file_size > 20 * 1024 * 1024:
-            raise HTTPException(status_code=400, detail="文件大小超过20MB限制")
+        if file_size > 1024 * 1024 * 1024:  # 1GB
+            raise HTTPException(status_code=400, detail="文件大小超过1GB限制")
         
         # 处理音视频
         try:

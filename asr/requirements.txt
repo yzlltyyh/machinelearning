@@ -3,3 +3,6 @@ fastapi
 requests
 google-generativeai
 pydantic_settings
+openai
+python-multipart
+uvicorn
