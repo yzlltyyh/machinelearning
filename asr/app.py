@@ -108,7 +108,8 @@ class MediaProcessor:
     
     SUPPORTED_AUDIO_FORMATS = {
         'audio/wav', 'audio/mp3', 'audio/aiff', 
-        'audio/aac', 'audio/ogg', 'audio/flac'
+        'audio/aac', 'audio/ogg', 'audio/flac',
+        'audio/webm'  # 添加 webm 音频支持
     }
     
     def __init__(self, temp_dir: str):
@@ -149,12 +150,12 @@ class MediaProcessor:
             with open(temp_input_path, "wb") as f:
                 f.write(content)
             
-            # 如果是视频文件，转换为音频
-            if mime_type in self.SUPPORTED_VIDEO_FORMATS:
+            # 如果是视频文件或webm音频，需要转换
+            if mime_type in self.SUPPORTED_VIDEO_FORMATS or mime_type == 'audio/webm':
                 if not self._check_ffmpeg():
                     raise ValueError("未安装ffmpeg，无法处理视频文件")
                     
-                # 使用ffmpeg提取音频
+                # 使用ffmpeg转换音频
                 command = [
                     'ffmpeg', '-i', str(temp_input_path),
                     '-vn',  # 禁用视频
@@ -167,14 +168,14 @@ class MediaProcessor:
                 
                 process = subprocess.run(command, capture_output=True)
                 if process.returncode != 0:
-                    raise ValueError(f"视频处理失败: {process.stderr.decode()}")
+                    raise ValueError(f"音频处理失败: {process.stderr.decode()}")
                 
                 # 读取处理后的音频文件
                 with open(temp_output_path, 'rb') as f:
                     audio_content = f.read()
                 return audio_content, 'audio/mp3'
                 
-            # 如果是音频文件，直接返回
+            # 如果是其他支持的音频文件，直接返回
             elif mime_type in self.SUPPORTED_AUDIO_FORMATS:
                 return content, mime_type
             else:
@@ -312,6 +313,7 @@ async def read_root():
                 <li>OGG (.ogg)</li>
                 <li>FLAC (.flac)</li>
                 <li>AIFF (.aiff)</li>
+                <li>WebM (.webm)</li>
             </ul>
             
             <h3>限制条件</h3>
