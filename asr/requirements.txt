@@ -1,0 +1,5 @@
+anyio
+fastapi
+requests
+google-generativeai
+pydantic_settings
