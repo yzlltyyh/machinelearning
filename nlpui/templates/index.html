@@ -285,14 +285,17 @@
         <section class="content-block content-block-lg animate-fade-in-up">
             <div class="voice-controls">
                 <div class="btn-group">
-                    <button id="startVoice" class="btn btn-voice">
-                        <i class="fas fa-microphone"></i>
-                        开始语音输入
+                    <button id="startRecording" class="btn btn-primary">
+                        <i class="fas fa-microphone"></i> 开始录音
                     </button>
-                    <button id="stopVoice" class="btn btn-voice" disabled>
-                        <i class="fas fa-stop-circle"></i>
-                        停止语音输入
+                    <button id="stopRecording" class="btn btn-danger" style="display: none;">
+                        <i class="fas fa-stop"></i> 停止录音
                     </button>
+                    <label for="fileUpload" class="btn btn-secondary">
+                        <i class="fas fa-file-upload"></i> 上传音视频
+                    </label>
+                    <input type="file" id="fileUpload" style="display: none;" 
+                        accept=".mp4,.mpeg,.mpg,.mov,.avi,.mkv,.wav,.mp3,.aac,.ogg,.flac,.aiff">
                 </div>
                 <div class="status-badge">等待输入</div>
             </div>
@@ -366,54 +369,45 @@
     </main>
 
     <!-- 修改JavaScript部分 -->
+    <script src="{{ url_for('static', filename='js/audio-recorder.js') }}"></script>
     <script>
-        // 语音输入相关函数
-        function initVoiceInput() {
-            const startBtn = document.getElementById('startVoice');
-            const stopBtn = document.getElementById('stopVoice');
-            const statusBadge = document.querySelector('.status-badge');
-            const textArea = document.getElementById('inputText');
+        const recorder = new AudioRecorder();
+        const startBtn = document.getElementById('startRecording');
+        const stopBtn = document.getElementById('stopRecording');
+        const messageInput = document.getElementById('inputText'); // 修正为正确的输入框 ID
 
-            if ('webkitSpeechRecognition' in window) {
-                const recognition = new webkitSpeechRecognition();
-                recognition.continuous = true;
-                recognition.interimResults = true;
-                recognition.lang = 'zh-CN';
-
-                startBtn.addEventListener('click', () => {
-                    recognition.start();
-                    startBtn.disabled = true;
-                    stopBtn.disabled = false;
-                    statusBadge.textContent = '正在录音...';
-                });
-
-                stopBtn.addEventListener('click', () => {
-                    recognition.stop();
-                    startBtn.disabled = false;
-                    stopBtn.disabled = true;
-                    statusBadge.textContent = '等待输入';
-                });
-
-                recognition.onresult = (event) => {
-                    let finalTranscript = '';
-                    for (let i = event.resultIndex; i < event.results.length; i++) {
-                        if (event.results[i].isFinal) {
-                            finalTranscript += event.results[i][0].transcript;
-                        }
-                    }
-                    if (finalTranscript) {
-                        textArea.value = finalTranscript;
-                    }
-                };
-            } else {
-                startBtn.disabled = true;
-                stopBtn.disabled = true;
-                statusBadge.textContent = '浏览器不支持语音输入';
+        startBtn.addEventListener('click', async () => {
+            try {
+                await recorder.startRecording();
+                startBtn.style.display = 'none';
+                stopBtn.style.display = 'inline-block';
+                document.querySelector('.status-badge').textContent = '正在录音...';
+            } catch (err) {
+                alert('无法启动录音：' + err.message);
             }
-        }
+        });
 
-        // 初始化语音输入
-        initVoiceInput();
+        stopBtn.addEventListener('click', async () => {
+            try {
+                const audioBlob = await recorder.stopRecording();
+                stopBtn.style.display = 'none';
+                startBtn.style.display = 'inline-block';
+                
+                // 显示加载状态
+                messageInput.value = '正在转写...';
+                document.querySelector('.status-badge').textContent = '正在转写...';
+                
+                // 上传并获取转写文本
+                const text = await recorder.uploadAudio(audioBlob);
+                messageInput.value = text;
+                document.querySelector('.status-badge').textContent = '等待输入';
+            } catch (err) {
+                alert('录音处理失败：' + err.message);
+                stopBtn.style.display = 'none';
+                startBtn.style.display = 'inline-block';
+                document.querySelector('.status-badge').textContent = '等待输入';
+            }
+        });
 
         // 初始化饼图
         let myChart = null;

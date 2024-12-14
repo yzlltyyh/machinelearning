@@ -109,5 +109,37 @@ def proxy_tts():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/speech-to-text', methods=['POST'])
+def speech_to_text():
+    if 'audio' not in request.files and 'file' not in request.files:
+        return jsonify({'error': '没有收到音频文件'}), 400
+        
+    # 获取上传的文件（可能是音频录制或文件上传）
+    upload_file = request.files.get('audio') or request.files.get('file')
+    
+    # 调用转写 API
+    files = {
+        'file': (upload_file.filename, upload_file.stream, upload_file.content_type)
+    }
+    
+    try:
+        response = requests.post(
+            'https://asr.capoo.live/api/v1/transcribe',
+            files=files
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            return jsonify({
+                'text': result['transcript']
+            })
+        else:
+            return jsonify({
+                'error': f'转写服务返回错误: {response.status_code}'
+            }), response.status_code
+            
+    except Exception as e:
+        return jsonify({'error': f'请求转写服务时发生错误: {str(e)}'}), 500
+
 if __name__ == '__main__':
     app.run(debug=True, port=2354)
