@@ -259,10 +259,59 @@
         .audio-section .audio-player {
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
+
+        .emotional-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+            padding: 1rem;
+        }
+
+        .metric-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-600);
+            margin: 0.5rem 0;
+        }
+
+        .metric-label {
+            font-size: 1rem;
+            color: var(--neutral-600);
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-range {
+            font-size: 0.8rem;
+            color: var(--neutral-500);
+        }
+
+        /* 移除原有的sentiment-chart相关样式 */
+        .sentiment-chart {
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <!-- 添��背景装饰 -->
+    <!-- 添加背景装饰 -->
     <div class="background-decoration">
         <div class="decoration-shape shape-1"></div>
         <div class="decoration-shape shape-2"></div>
@@ -644,7 +693,7 @@
             const resultHTML = `
                 <div class="result-card animate-fade-in">
                     <div class="result-header">
-                        <h3>   分析结果</h3>
+                        <h3>分析结果</h3>
                     </div>
                     <div class="result-content">
                         <div class="result-emotion">
@@ -658,81 +707,33 @@
                             <span class="label">置信度：</span>
                             <span class="value">${(data.confidence * 100).toFixed(1)}%</span>
                         </div>
-                        <div id="sentiment-chart" class="sentiment-chart"></div>
+                        
+                        <!-- 新增情绪指标展示 -->
+                        <div class="emotional-metrics">
+                            <div class="metric-card">
+                                <div class="metric-icon">😰</div>
+                                <div class="metric-value">${data.anxiety}</div>
+                                <div class="metric-label">焦虑指数</div>
+                                <div class="metric-range">范围: 0-21</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-icon">😢</div>
+                                <div class="metric-value">${data.depression}</div>
+                                <div class="metric-label">抑郁指数</div>
+                                <div class="metric-range">范围: 0-21</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-icon">😫</div>
+                                <div class="metric-value">${data.stress}</div>
+                                <div class="metric-label">压力指数</div>
+                                <div class="metric-range">范围: 0-40</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
             
             resultsContainer.innerHTML = resultHTML;
-            
-            // 确保等待DOM更新后再初始化图表
-            setTimeout(() => {
-                const chartContainer = document.querySelector('#sentiment-chart');
-                if (chartContainer) {
-                    // 重新初始化图表
-                    if (myChart) {
-                        myChart.dispose();  // 销毁旧的图表实例
-                    }
-                    myChart = echarts.init(chartContainer);
-            
-                    // 处理嵌套数组的情况
-                    let probArray = Array.isArray(data.probabilities[0]) ? 
-                                  data.probabilities[0] : 
-                                  data.probabilities;
-            
-                    // 根据情感倾向决定标签
-                    const isNegative = data.sentiment === '消极' || data.sentiment === '负面';
-                    const accurateLabel = isNegative ? '消极' : '积极';
-                    const inaccurateLabel = isNegative ? '积极' : '消极';
-            
-                    const option = {
-                        title: {
-                            text: '情感概率分布',
-                            left: 'center'
-                        },
-                        tooltip: {
-                            trigger: 'item',
-                            formatter: '{b}: {c}%'
-                        },
-                        legend: {
-                            orient: 'horizontal',
-                            bottom: 'bottom'
-                        },
-                        series: [
-                            {
-                                type: 'pie',
-                                radius: '50%',
-                                data: [
-                                    { 
-                                        value: (probArray[0] * 100).toFixed(1), 
-                                        name: accurateLabel,
-                                        itemStyle: { color: isNegative ? '#f44336' : '#4CAF50' }
-                                    },
-                                    { 
-                                        value: (probArray[1] * 100).toFixed(1), 
-                                        name: inaccurateLabel,
-                                        itemStyle: { color: isNegative ? '#4CAF50' : '#f44336' }
-                                    }
-                                ],
-                                emphasis: {
-                                    itemStyle: {
-                                        shadowBlur: 10,
-                                        shadowOffsetX: 0,
-                                        shadowColor: 'rgba(0, 0, 0, 0.5)'
-                                    }
-                                }
-                            }
-                        ]
-                    };
-            
-                    myChart.setOption(option);
-                } else {
-                    console.error('Chart container not found');
-                }
-            }, 100);
-
-            // 在分析完成后自动生成语音
-            generateTTS();
         }
     </script>
 </body>
