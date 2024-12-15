@@ -188,7 +188,10 @@ class VideoAnalyzer {
                     emotionElement.title = `情感倾向: ${result.sentiment}\n置信度: ${(result.confidence * 100).toFixed(1)}%`;
                     
                     // 添加情感类名用于样式
-                    segment.classList.add(`emotion-${result.sentiment.toLowerCase()}`);
+                    const emotionClass = result.sentiment === '积极' || result.sentiment === '正面' ? 'positive' :
+                                       result.sentiment === '消极' || result.sentiment === '负面' ? 'negative' :
+                                       'neutral';
+                    segment.classList.add(`emotion-${emotionClass}`);
                     
                     // 添加动画效果
                     emotionElement.classList.add('emotion-fade-in');
@@ -212,11 +215,14 @@ class VideoAnalyzer {
 
     getEmotionIcon(emotion) {
         const icons = {
-            positive: '😊',
-            neutral: '😐',
-            negative: '😔'
+            '积极': '😊',
+            '正面': '😊',
+            '中性': '😐',
+            '消极': '😔',
+            '负面': '😔',
+            'error': '❌'
         };
-        return icons[emotion] || '❓';
+        return icons[emotion] || emotion || '❓';
     }
 
     showLoading(message) {
