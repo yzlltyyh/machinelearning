@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音视频情感分析</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/video-player.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/segments.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layouts/video-page.css') }}">
+</head>
+<body>
+    <header class="header">
+        <nav class="nav-bar">
+            <a href="/" class="nav-link">
+                <i class="fas fa-arrow-left"></i> 返回主页
+            </a>
+            <h1 class="page-title">音视频情感分析</h1>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <section class="upload-section">
+            <div class="upload-area" id="dropZone">
+                <input type="file" id="fileUpload" accept=".mp4,.mpeg,.mpg,.mov,.avi,.mkv,.wav,.mp3,.aac,.ogg,.flac,.aiff" hidden>
+                <div class="upload-content">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>拖放文件到此处或点击上传</p>
+                    <span class="file-types">支持的格式: MP4, MOV, AVI, MKV, WAV, MP3等</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="player-section" style="display: none;">
+            <div class="video-container">
+                <video id="videoPlayer" controls>
+                    您的浏览器不支持视频播放
+                </video>
+            </div>
+        </section>
+
+        <section class="analysis-section" style="display: none;">
+            <div class="segments-container">
+                <div class="segments-header">
+                    <h3>转写文本</h3>
+                    <div class="segments-controls">
+                        <button class="btn btn-primary" id="analyzeBtn">
+                            <i class="fas fa-chart-bar"></i> 分析情感
+                        </button>
+                    </div>
+                </div>
+                <div class="segments-list"></div>
+            </div>
+        </section>
+
+        <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <p class="loading-text">正在处理...</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/modules/video-analyzer.js') }}" type="module"></script>
+</body>
+</html> 

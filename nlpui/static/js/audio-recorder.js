@@ -47,7 +47,7 @@ class AudioRecorder {
             }
 
             const result = await response.json();
-            return result.text;
+            return result.transcript;
         } catch (err) {
             console.error('上传音频失败:', err);
             throw err;
@@ -96,10 +96,8 @@ class AudioRecorder {
                     }
 
                     const result = await response.json();
-                    messageInput.value = result.text;
+                    displayTranscriptSegments(result);
                     statusBadge.textContent = '等待输入';
-
-                    // 清除文件选择，允许重复上传相同文件
                     fileInput.value = '';
 
                 } catch (error) {
@@ -113,5 +111,29 @@ class AudioRecorder {
     }
 }
 
-// 导出供其他模块使用
+// 显示转写结果的函数
+function displayTranscriptSegments(data) {
+    const inputText = document.getElementById('inputText');
+    const segmentsContainer = document.getElementById('segmentsContainer');
+    const segmentsList = segmentsContainer.querySelector('.segments-list');
+    
+    // 隐藏输入框，显示段落容器
+    inputText.style.display = 'none';
+    segmentsContainer.style.display = 'block';
+    
+    // 清空并填充段落列表
+    segmentsList.innerHTML = '';
+    data.segments.forEach((segment, index) => {
+        const segmentElement = document.createElement('div');
+        segmentElement.className = 'segment-item';
+        segmentElement.textContent = segment;
+        segmentElement.style.animationDelay = `${index * 0.1}s`;
+        segmentsList.appendChild(segmentElement);
+    });
+    
+    // 将完整文本设置到隐藏的输入框中（用于后续分析）
+    inputText.value = data.transcript;
+}
+
+// 移除之前添加的重复的文件上传处理代码
 window.AudioRecorder = AudioRecorder; 

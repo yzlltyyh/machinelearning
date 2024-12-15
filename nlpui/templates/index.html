@@ -262,7 +262,7 @@
     </style>
 </head>
 <body>
-    <!-- 添加背景装饰 -->
+    <!-- 添��背景装饰 -->
     <div class="background-decoration">
         <div class="decoration-shape shape-1"></div>
         <div class="decoration-shape shape-2"></div>
@@ -291,11 +291,9 @@
                     <button id="stopRecording" class="btn btn-danger" style="display: none;">
                         <i class="fas fa-stop"></i> 停止录音
                     </button>
-                    <label for="fileUpload" class="btn btn-secondary">
-                        <i class="fas fa-file-upload"></i> 上传音视频
-                    </label>
-                    <input type="file" id="fileUpload" style="display: none;" 
-                        accept=".mp4,.mpeg,.mpg,.mov,.avi,.mkv,.wav,.mp3,.aac,.ogg,.flac,.aiff">
+                    <a href="/video" class="btn btn-secondary">
+                        <i class="fas fa-video"></i> 音视频分析
+                    </a>
                 </div>
                 <div class="status-badge">等待输入</div>
             </div>
@@ -304,6 +302,12 @@
                 <textarea id="inputText" 
                          class="input-field textarea"
                          placeholder="请输入或说出要分析的文本..."></textarea>
+                
+                <!-- 新增句子展示区域 -->
+                <div id="segmentsContainer" class="segments-container" style="display: none;">
+                    <h3 class="segments-title">转写结果</h3>
+                    <div class="segments-list"></div>
+                </div>
             </div>
 
             <div class="btn-group mt-6">

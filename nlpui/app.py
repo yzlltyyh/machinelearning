@@ -117,22 +117,21 @@ def speech_to_text():
     # 获取上传的文件（可能是音频录制或文件上传）
     upload_file = request.files.get('audio') or request.files.get('file')
     
-    # 调用转写 API
-    files = {
-        'file': (upload_file.filename, upload_file.stream, upload_file.content_type)
-    }
-    
     try:
         response = requests.post(
             'https://asr.capoo.live/api/v1/transcribe',
-            files=files
+            files={'file': (upload_file.filename, upload_file.stream, upload_file.content_type)}
         )
         
         if response.status_code == 200:
             result = response.json()
-            return jsonify({
-                'text': result['transcript']
-            })
+            # 确保返回的数据包含segments字段
+            if 'segments' not in result:
+                # 如果没有segments，根据标点符号分割文本
+                segments = [s.strip() for s in result['transcript'].replace('。', '。\n').split('\n') if s.strip()]
+                result['segments'] = segments
+                
+            return jsonify(result)
         else:
             return jsonify({
                 'error': f'转写服务返回错误: {response.status_code}'
@@ -140,6 +139,92 @@ def speech_to_text():
             
     except Exception as e:
         return jsonify({'error': f'请求转写服务时发生错误: {str(e)}'}), 500
+
+@app.route('/video')
+def video_page():
+    return render_template('video.html')
+
+@app.route('/api/video/process', methods=['POST'])
+def process_video():
+    if 'file' not in request.files:
+        return jsonify({'error': '没有文件'}), 400
+        
+    file = request.files['file']
+    try:
+        response = requests.post(
+            'https://asr.capoo.live/api/v1/transcribe',
+            files={'file': (file.filename, file.stream, file.content_type)}
+        )
+        
+        if response.status_code != 200:
+            return jsonify({
+                'error': f'转写服务返回错误: {response.status_code}'
+            }), response.status_code
+            
+        result = response.json()
+        print("ASR Response:", result)  # 调试输出
+        
+        # 确保返回的数据包含segments字段
+        if 'segments' not in result:
+            # 如果没有segments，根据标点符号分割文本
+            segments = [s.strip() for s in result['transcript'].replace('。', '。\n').split('\n') if s.strip()]
+            result = {
+                'transcript': result['transcript'],
+                'segments': segments
+            }
+        
+        return jsonify(result)
+    except Exception as e:
+        print("Process Error:", str(e))  # 调试输出
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/video/analyze', methods=['POST'])
+def analyze_video():
+    try:
+        # 获取转写文本
+        text = request.json.get('text', '')
+        segments = request.json.get('segments', [])
+        
+        if not text or not segments:
+            return jsonify({'error': '缺少必要的文本数据'}), 400
+            
+        # 分析整体情感
+        overall_response = requests.post(
+            'https://nlp.capoo.live/predict',
+            json={'text': text},
+            headers={'Content-Type': 'application/json'}
+        )
+        
+        if overall_response.status_code != 200:
+            return jsonify({'error': 'NLP服务错误'}), overall_response.status_code
+            
+        overall_result = overall_response.json()
+        
+        # 分析每个片段的情感
+        segment_results = []
+        for segment in segments:
+            segment_response = requests.post(
+                'https://nlp.capoo.live/predict',
+                json={'text': segment['text']},
+                headers={'Content-Type': 'application/json'}
+            )
+            if segment_response.status_code == 200:
+                result = segment_response.json()
+                segment_results.append(result['sentiment'])
+            else:
+                segment_results.append('neutral')  # 分析失败时使用中性
+        
+        result = {
+            'overall': {
+                'sentiment': overall_result['sentiment'],
+                'confidence': overall_result['confidence'],
+                'probabilities': overall_result['probabilities']
+            },
+            'segments': segment_results
+        }
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=2354)
