@@ -114,25 +114,24 @@ def speech_to_text():
     if 'audio' not in request.files and 'file' not in request.files:
         return jsonify({'error': '没有收到音频文件'}), 400
         
-    # 获取上传的文件（可能是音频录制或文件上传）
+    # 获取上传的文件（可能是音频录制或视频文件上传）
     upload_file = request.files.get('audio') or request.files.get('file')
-    
-    # 调用转写 API
-    files = {
-        'file': (upload_file.filename, upload_file.stream, upload_file.content_type)
-    }
     
     try:
         response = requests.post(
             'https://asr.capoo.live/api/v1/transcribe',
-            files=files
+            files={'file': (upload_file.filename, upload_file.stream, upload_file.content_type)}
         )
         
         if response.status_code == 200:
             result = response.json()
-            return jsonify({
-                'text': result['transcript']
-            })
+            # 确保返回的数据包含segments字段
+            if 'segments' not in result:
+                # 如果没有segments，根据标点符号分割文本
+                segments = [s.strip() for s in result['transcript'].replace('。', '。\n').split('\n') if s.strip()]
+                result['segments'] = segments
+                
+            return jsonify(result)
         else:
             return jsonify({
                 'error': f'转写服务返回错误: {response.status_code}'

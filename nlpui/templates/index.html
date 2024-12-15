@@ -262,7 +262,7 @@
     </style>
 </head>
 <body>
-    <!-- 添加背景装饰 -->
+    <!-- 添��背景装饰 -->
     <div class="background-decoration">
         <div class="decoration-shape shape-1"></div>
         <div class="decoration-shape shape-2"></div>
@@ -304,6 +304,12 @@
                 <textarea id="inputText" 
                          class="input-field textarea"
                          placeholder="请输入或说出要分析的文本..."></textarea>
+                
+                <!-- 新增句子展示区域 -->
+                <div id="segmentsContainer" class="segments-container" style="display: none;">
+                    <h3 class="segments-title">转写结果</h3>
+                    <div class="segments-list"></div>
+                </div>
             </div>
 
             <div class="btn-group mt-6">
@@ -361,7 +367,7 @@
                     </div>
                     <audio id="ttsAudio">
                         <source src="" type="audio/wav">
-                        您的浏览器不支持音频播放
+                        您的浏览���不支持音频播放
                     </audio>
                 </div>
             </section>
